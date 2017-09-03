@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.tract {
+  fill: #eee;
+}
+
+.tract:hover {
+  fill: orange;
+}
+
+.tract-border {
+  fill: none;
+  stroke: #777;
+  stroke-width: .2px;
+  pointer-events: none;
+}
+
+html, body {
+  height: 100%;
+}
+
+</style>
+<body><div><svg width="500" height="500"><div></svg></body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+
+
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var aspect = width / height;
+
+svg.on('resize', function(){
+  console.log('resize');
+  var targetWidth = svg.node().getBoundingClientRect().width;
+  chart.attr("width", targetWidth);
+  chart.attr("height", targetWidth / aspect);
+})
+
+d3.json("bus.json", function(error, nj) {
+  if (error) throw error;
+
+  var land = topojson.feature(nj, {
+    type: "GeometryCollection",
+    geometries: nj.objects.Maryland_Transit__MTA_Bus_Lines.geometries.filter(function(d) {
+      return (d.id / 10000 | 0) % 100 !== 99;
+    })
+  });
+
+// EPSG: 2248
+  var path = d3.geoPath()
+    .projection(d3.geoTransverseMercator()
+      .rotate([77, -37.66666666666666])
+      .fitSize([width, height], land));
+
+  svg.selectAll("path")
+    .data(land.features)
+    .enter().append("path")
+      .attr("class", "tract")
+      .attr("d", path)
+    .append("title")
+      .text(function(d) { return d.id; });
+
+  g = svg.append("path")
+      .datum(topojson.mesh(nj, nj.objects.Maryland_Transit__MTA_Bus_Lines, function(a, b) { return a !== b; }))
+      .attr("class", "tract-border")
+      .attr("d", path);
+
+  svg.append("rect")
+      .attr("fill", "none")
+      .attr("pointer-events", "all")
+      .attr("width", width)
+      .attr("height", height)
+      .call(d3.zoom()
+          .scaleExtent([1, 8])
+          .on("zoom", zoom));
+  
+  function zoom() {
+    g.attr("transform", d3.event.transform);
+  }
+
+
+});
+
+</script>

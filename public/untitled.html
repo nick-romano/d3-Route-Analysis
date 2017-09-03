@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<canvas width="960" height="800"></canvas>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var canvas = d3.select("canvas").node(),
+    context = canvas.getContext("2d"),
+    path = d3.geoPath().projection(d3.geoTransverseMercator()
+      .rotate([77, -37.66666666666666])
+      .fitExtent([[20,20], [940, 1180]], land)).context(context);
+
+
+d3.json("bus.json", function(error, ca) {
+  if (error) throw error;
+
+    var land = topojson.feature(ca, {
+    type: "GeometryCollection",
+    geometries: ca.objects.Maryland_Transit__MTA_Bus_Lines.geometries.filter(function(d) {
+      return (d.id / 10000 | 0) % 100 !== 99;
+    })
+  });
+  context.beginPath();
+  path(topojson.feature(ca, ca.objects.Maryland_Transit__MTA_Bus_Lines));
+  context.fillStyle = "#ddd";
+  context.fill();
+
+  context.beginPath();
+  path(topojson.mesh(ca, ca.objects.Maryland_Transit__MTA_Bus_Lines, function(a, b) { return a !== b; }));
+  context.strokeStyle = "#999";
+  context.stroke();
+});
+
+</script>
