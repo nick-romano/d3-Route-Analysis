@@ -21,8 +21,15 @@ html, body {
   height: 100%;
 }
 
+#container {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%);
+  border: 1px solid black;
+}
+
 </style>
-<body><div><svg width="500" height="500"><div></svg></body>
+<body><div id="container"><svg width="500" height="500"></div></svg></body>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/topojson.v1.min.js"></script>
 <script>
@@ -59,13 +66,13 @@ d3.json("bus.json", function(error, nj) {
       .rotate([77, -37.66666666666666])
       .fitSize([width, height], land));
 
-  svg.selectAll("path")
-    .data(land.features)
-    .enter().append("path")
-      .attr("class", "tract")
-      .attr("d", path)
-    .append("title")
-      .text(function(d) { return d.id; });
+  // svg.selectAll("path")
+  //   .data(land.features)
+  //   .enter().append("path")
+  //     .attr("class", "tract")
+  //     .attr("d", path)
+  //   .append("title")
+  //     .text(function(d) { return d.id; });
 
   g = svg.append("path")
       .datum(topojson.mesh(nj, nj.objects.Maryland_Transit__MTA_Bus_Lines, function(a, b) { return a !== b; }))
@@ -78,7 +85,7 @@ d3.json("bus.json", function(error, nj) {
       .attr("width", width)
       .attr("height", height)
       .call(d3.zoom()
-          .scaleExtent([1, 8])
+          .scaleExtent([3, 25])
           .on("zoom", zoom));
   
   function zoom() {
